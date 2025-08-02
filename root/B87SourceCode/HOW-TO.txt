@@ -1,0 +1,196 @@
+QMK Firmware Compilation & Flashing Guide for iLovBee B87
+This document outlines the steps to compile and flash custom QMK firmware for your iLovBee B87 keyboard, specifically addressing the issues encountered during initial setup.
+
+1. Prerequisites & Tools
+Make sure you have the following installed and ready:
+
+QMK MSYS: Your primary command-line environment for compiling.
+
+Text Editor: (e.g., VS Code, Notepad++, Sublime Text) for editing source code files.
+
+Zadig: A utility for installing USB drivers (specifically for the DFU bootloader).
+
+Download from: https://zadig.akeo.fr/
+
+QMK Toolbox: For flashing your compiled firmware to the keyboard.
+
+Download from: https://qmk.fm/toolbox/
+
+Your iLovBee B87 Source Code: Located at H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode
+
+2. Understanding Your Firmware Structure
+Your custom QMK project for the iLovBee B87 is set up in a specific way:
+
+Your QMK Root: H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode
+
+This is the directory you will cd into when compiling.
+
+Keyboard Folder: H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode\keyboards\ilovbee\b87
+
+Crucial Note: The vendor folder IlovBee was renamed to ilovbee (all lowercase) to comply with QMK's API naming conventions. Always use ilovbee/b87 in your commands and rules.mk.
+
+Keymap Locations: Your individual keymap folders (like CustomMap or default) are located inside: H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode\keyboards\ilovbee\b87\keymaps\
+
+Important: If you create a new keymap or modify an existing one, its folder must be placed inside keymaps/ at this path.
+
+3. Initial Setup and Fixing Common Issues (One-Time Setup)
+These steps fix issues that prevented compilation initially. They generally only need to be done once per source code base.
+
+3.1. Configure rules.mk for the Keyboard
+This file defines core keyboard settings.
+
+Location: H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode\keyboards\ilovbee\b87\rules.mk
+
+Content: Ensure this file contains the following lines (uncommented if necessary). If the file was missing, create it.
+
+Makefile
+
+# This line tells QMK the internal name of your keyboard.
+# It MUST match the path relative to the 'keyboards/' directory.
+KEYBOARD = ilovbee/b87
+
+# This specifies the microcontroller platform/family.
+MCU = wb32
+
+# This specifies the bootloader type for your WB32 microcontroller.
+BOOTLOADER = wb32-dfu
+
+# Enable core features for your board (RGB Matrix for per-key RGB)
+RGB_MATRIX_ENABLE = yes
+
+# Add other features if you need them (uncomment and set to yes):
+# COMBO_ENABLE = yes
+# MOUSEKEY_ENABLE = yes
+# EXTRAKEY_ENABLE = yes
+# CONSOLE_ENABLE = yes # Good for debugging if you can connect via serial
+Save the rules.mk file.
+
+3.2. Correcting b87.c (API Mismatch)
+This fixes eeconfig errors due to API changes in newer QMK versions.
+
+Location: H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode\keyboards\ilovbee\b87\b87.c
+
+Task: Find the hs_reset_settings function within this file.
+
+Modifications:
+
+Original (causing error):
+
+C
+
+keymap_config.raw = eeconfig_read_keymap(); // Line 279
+// ...
+eeconfig_update_keymap(keymap_config.raw);   // Line 282
+Corrected Code:
+
+C
+
+eeconfig_read_keymap(&keymap_config);      // Corrected line 279 (removed assignment to .raw)
+// ... (any existing code between these lines) ...
+eeconfig_update_keymap(&keymap_config);    // Corrected line 282 (added '&')
+Key points:
+
+Remove keymap_config.raw = from the eeconfig_read_keymap line.
+
+Add the & symbol before keymap_config for both eeconfig_read_keymap and eeconfig_update_keymap calls.
+
+Double-check the spelling: eeconfig (two 'e's) not keeconfig.
+
+Save the b87.c file.
+
+3.3. Permissions (If "Permission Denied" Error Appears)
+If you ever encounter a Permission denied error during compilation:
+
+Close QMK MSYS.
+
+Right-click on the "QMK MSYS" shortcut in your Start Menu.
+
+Select "Run as administrator".
+
+Proceed with your cd and qmk compile commands.
+
+4. Compiling Your Firmware
+Follow these steps every time you want to compile a new firmware .hex or .bin file.
+
+Open QMK MSYS. (Ensure it's running as administrator if you had permission issues before).
+
+Navigate to your custom QMK root directory:
+
+Bash
+
+cd "/h/PrivateCode/QMK-VIA-Custom-Keyboard/root/B87SourceCode"
+Set QMK_HOME for this session: (This tells QMK where to find your custom keyboard files.)
+
+Bash
+
+export QMK_HOME="/h/PrivateCode/QMK-VIA-Custom-Keyboard/root/B87SourceCode"
+(Alternatively, you can include -c . in your compile command, e.g., qmk compile -c . -kb ilovbee/b87 -km CustomMap)
+
+Run the Compile Command:
+
+Replace <Your_Keymap_Folder_Name> with the actual name of your keymap's folder (e.g., CustomMap, default).
+
+Bash
+
+qmk compile -kb ilovbee/b87 -km <Your_Keymap_Folder_Name>
+Check Output:
+
+Look for [OK] at the very end of the output.
+
+Your compiled firmware file (.hex or .bin) will be located in:
+H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode\.build\ilovbee_b87_<Your_Keymap_Folder_Name>.hex (or .bin)
+
+5. Flashing Your Firmware
+Once you have your compiled firmware file, follow these steps to flash it to your keyboard.
+
+Open QMK Toolbox.
+
+Prepare your Keyboard for DFU Mode:
+
+Unplug your keyboard from the computer.
+
+Hold down the ESC key.
+
+While still holding ESC, plug your keyboard back into the USB port.
+
+Keep holding ESC for a few seconds until QMK Toolbox detects the device.
+
+QMK Toolbox should show: WB32 DFU device connected: WB Device in DFU Mode (342D:DFA0:0100)
+
+Install WB32 DFU Driver (One-Time Setup with Zadig):
+
+If QMK Toolbox shows (NO DRIVER) next to the DFU device detection:
+
+Close QMK Toolbox.
+
+Run zadig-X.X.exe as administrator.
+
+In Zadig, go to Options -> List All Devices.
+
+From the dropdown list, carefully select WB Device in DFU Mode (verify the USB ID is 342D:DFA0).
+
+Ensure the "Target Driver" is set to WinUSB.
+
+Click Replace Driver or Install Driver.
+
+Close Zadig.
+
+Unplug and re-plug your keyboard (holding ESC) to put it back into DFU mode.
+
+Re-open QMK Toolbox. It should now show the (WinUSB) driver for your device.
+
+Flash the Firmware:
+
+In QMK Toolbox, click the Open button.
+
+Navigate to your compiled firmware file (e.g., H:\PrivateCode\QMK-VIA-Custom-Keyboard\root\B87SourceCode\.build\ilovbee_b87_CustomMap.hex) and select it.
+
+Click the Flash button.
+
+Wait for the flashing process to complete (you'll see progress messages in QMK Toolbox).
+
+Exit DFU Mode:
+
+Once flashing is successful, click the Exit DFU button in QMK Toolbox.
+
+Your keyboard should reboot out of DFU mode and start functioning with your new firmware!
