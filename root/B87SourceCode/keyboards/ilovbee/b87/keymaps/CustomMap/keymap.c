@@ -61,7 +61,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 #ifdef ENCODER_MAP_ENABLE
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [0] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU)},
+    [0] = {ENCODER_CCW_CW(KC_VOLU, KC_VOLD)},
     [1] = {ENCODER_CCW_CW(_______, _______)},
     [2] = {ENCODER_CCW_CW(_______, _______)},
     [3] = {ENCODER_CCW_CW(_______, _______)},
@@ -70,56 +70,20 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 #endif
 // clang-format on
 
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    if (get_highest_layer(layer_state) > 0) {
+        uint8_t layer = get_highest_layer(layer_state);
 
+        for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+            for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
+                uint8_t index = g_led_config.matrix_co[row][col];
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (record->event.pressed) {
-        uint8_t current_layer = get_highest_layer(layer_state);
-
-        static uint8_t last_layer = 255; // Initialize with a value that won't match any real layer
-
-        // Only change RGB if the layer has actually changed
-        if (current_layer != last_layer) {
-            #ifdef RGB_MATRIX_ENABLE
-            // Ensure we are in a static color mode
-            rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE); // Or RGB_MATRIX_SOLID_COLOR if you prefer
-
-            uint8_t base_hue       = 170; // Hue for Blue
-            uint8_t base_saturation = 150; // Reduced saturation for "light" blue
-            uint8_t base_value     = 255; // Full brightness
-
-            uint8_t current_hue = base_hue; // Start with base hue
-
-            switch (current_layer) {
-                case _BL: // Layer 0: Base Layer (Windows)
-                    // This is our starting point
-                    break; // No shift needed for the base layer
-                case _FL: // Layer 1: Your "First Layer" (Function Layer)
-                    current_hue += 40; // Shift hue up by 40
-                    break;
-                case _MBL: // Layer 2: Mac Base Layer
-                    current_hue += 80; // Shift hue up by 80 (2 * 40)
-                    break;
-                case _MFL: // Layer 3: Mac Function Layer
-                    current_hue += 120; // Shift hue up by 120 (3 * 40)
-                    break;
-                case _FBL: // Layer 4: Another Function Layer
-                    current_hue += 160; // Shift hue up by 160 (4 * 40)
-                    break;
-                default:
-                    // For any layers not explicitly defined, wrap the hue based on its number
-                    // This ensures it cycles through colors rather than going out of range
-                    current_hue += (current_layer * 40);
-                    break;
+                if (index >= led_min && index < led_max && index != NO_LED &&
+                keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS) {
+                    rgb_matrix_set_color(index, RGB_GREEN);
+                }
             }
-
-            // Apply the hue to the RGB Matrix.
-            // The hue will automatically "wrap around" if it exceeds 255.
-            rgb_matrix_sethsv(current_hue, base_saturation, base_value);
-
-            #endif // RGB_MATRIX_ENABLE
-            last_layer = current_layer; // Update the last_layer for the next check
         }
     }
-    return true; // Always return true so QMK continues processing the keycode
+    return false;
 }

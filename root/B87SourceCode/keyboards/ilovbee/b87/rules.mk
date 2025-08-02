@@ -1,9 +1,9 @@
 # This line tells QMK the internal name of your keyboard.
 # It must match the path relative to the 'keyboards/' directory.
 KEYBOARD = ilovbee/b87
+#rgb enabled for sure
+RGBLIGHT_ENABLE = yes
 
-# This specifies the microcontroller platform/family.
-MCU = wb32 # ADD THIS LINE!
 # This specifies the bootloader type for your WB32 microcontroller.
 BOOTLOADER = wb32-dfu
 
