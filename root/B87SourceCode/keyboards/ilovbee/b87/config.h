@@ -10,6 +10,10 @@
 #define BAT_FULL_PIN A15
 #define BAT_FULL_STATE 1
 
+//Sleep
+#define RGB_MATRIX_SLEEP false
+#define RGB_MATRIX_SLEEP_TIMEOUT 0
+
 
 #define HS_RGB_INDICATOR_COUNT 99
 #define HS_RGB_BAT_COUNT 1
@@ -53,23 +57,6 @@
 
 // --- ADDITIONS FOR REACTIVE RGB & DEFAULT SETTINGS ---
 
-// You must explicitly enable the RGB Matrix modes you want to include in your firmware.
-// For "Reactive Simple", you need this:
-#define ENABLE_RGB_MATRIX_REACTIVE_SIMPLE
-
-// You can also add other modes if you want them to be available via RGB_MOD keycode later:
-// #define ENABLE_RGB_MATRIX_SOLID_COLOR      // Recommended if you want to explicitly select this mode
-// #define ENABLE_RGB_MATRIX_BREATHING
-// #define ENABLE_RGB_MATRIX_REACTIVE_STIPPLE
-// #define ENABLE_RGB_MATRIX_REACTIVE_RIPPLE
-// #define ENABLE_RGB_MATRIX_REACTIVE_SPLASH
-// See QMK documentation for a full list of modes you can enable.
-
-// Default RGB Matrix Settings (Highly Recommended for Consistent Startup)
-// These set the initial state of your RGB Matrix when the keyboard first boots
-// or after an EEPROM reset.
-#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_COLOR // Start with a solid color
-#define RGB_MATRIX_DEFAULT_HUE  150                     // Light Blue Hue (for default)
-#define RGB_MATRIX_DEFAULT_SAT  180                     // Medium Saturation (for default)
-#define RGB_MATRIX_DEFAULT_VAL  200                     // High Value (Brightness) (for default)
-#define RGB_MATRIX_DEFAULT_SPD  0                       // Default speed (0 means no animation speed)
+#define RGB_MATRIX_ENABLE
+#define RGB_MATRIX_KEYPRESSES
+#define ENABLE_RGB_MATRIX_SOLID_REACTIVE_SIMPLE
